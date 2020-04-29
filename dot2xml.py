@@ -1,5 +1,6 @@
 from mts import MTS
 
+
 def mts_to_dot(path, mts: MTS):
     class_text = 'digraph'
 

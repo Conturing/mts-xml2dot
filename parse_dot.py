@@ -31,6 +31,7 @@ RAW_ID: /[_a-zA-Z\200-\377][a-zA-Z0-9\200-\377_]*/
 
 """, start='graph')
 
+
 class DotTransformer(Transformer):
     def graph(self, items):
         name, stmts = items
@@ -77,10 +78,22 @@ class DotTransformer(Transformer):
     def ESCAPED_STRING(self, val):
         return val.value
 
+
 def parse_dot(path):
     parser = grammar
     with open(path, 'rt') as f:
         tree = parser.parse(f.read())
-        print(tree.pretty())
-        print(DotTransformer(visit_tokens=True).transform(tree))
+
+        mts = MTS()
+        name, graph_attr = DotTransformer(visit_tokens=True).transform(tree)
+        for type, node_attr in graph_attr:
+            if type == 'NODE':
+                mts._add_state(id=node_attr["id"], **node_attr["attr"])
+            elif type == 'EDGE':
+                mts._add_transition(src=node_attr["src"], dest=node_attr["dest"], **node_attr["attr"])
+            else:
+                raise ValueError("Unexpected type in graph.")
+
+    return mts
+
 

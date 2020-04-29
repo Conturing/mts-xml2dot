@@ -6,6 +6,7 @@ from mts import MTS
 
 log = logging.getLogger(__name__)
 
+
 def parse_xml(path) -> MTS:
     tree = ET.parse(path)
     root = tree.getroot()

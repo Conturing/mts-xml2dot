@@ -7,17 +7,21 @@ class MTS:
         self.states = []
         self.transitions = []
 
-    def add_state(self, id, initial: bool = False):
-        self._add_state({
+    def add_state(self, id, initial: bool):
+        self._add_state(**{
             'id': id,
             'initial': initial
         })
 
-    def _add_state(self, state: Mapping):
+    def _add_state(self, **state: Mapping):
+        options = {
+            'initial': False
+        }
+        options.update(state)
         self.states.append(state)
 
     def add_transition(self, src, dest, label, may: bool, must: bool, green: bool, red: bool):
-        self._add_transition({
+        self._add_transition(**{
             'src': src,
             'dest': dest,
             'label': label,
@@ -27,5 +31,12 @@ class MTS:
             'red': red
         })
 
-    def _add_transition(self, transition: Mapping):
-        self.transitions.append(transition)
+    def _add_transition(self, **transition: Mapping):
+        options = {
+            'may': True,
+            'must': False,
+            'green': False,
+            'red': False
+        }
+        options.update(transition)
+        self.transitions.append(options)
