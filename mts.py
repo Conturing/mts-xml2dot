@@ -1,4 +1,4 @@
-from typing import Mapping
+from typing import Mapping, Callable, Any, Sequence, Iterator
 
 
 class MTS:
@@ -19,6 +19,9 @@ class MTS:
         }
         options.update(state)
         self.states.append(state)
+
+    def state_view(self, predicate: Callable[[Mapping], bool], transformer: Callable[[Mapping], Any] = lambda x: x.get('id')) -> Iterator[Any]:
+        return map(transformer, filter(predicate, self.states))
 
     def add_transition(self, src, dest, label, may: bool, must: bool, green: bool, red: bool):
         self._add_transition(**{
