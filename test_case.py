@@ -93,11 +93,7 @@ def convert_component(path: Union[str, PathLike], mc=False) -> Path:
         return rename_to
 
     graph_repr = parse_xml(root_file)
-
-    if mc:
-        mc_to_dot(str(rename_to.absolute()), graph_repr)
-    else:
-        mts_to_dot(str(rename_to.absolute()), graph_repr)
+    modal_to_dot(str(rename_to.absolute()), graph_repr, mc=mc)
 
     return rename_to
 
