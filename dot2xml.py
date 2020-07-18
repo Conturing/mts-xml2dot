@@ -5,7 +5,7 @@ from itertools import chain
 log = logging.getLogger(__name__)
 
 
-def modal_to_dot(path, mts: MTS, mc: bool = False):
+def modal_to_dot(path, mts: MTS, mc: bool = False, derive_groups: bool = False):
     class_text = 'digraph'
 
     states = []
@@ -23,11 +23,23 @@ def modal_to_dot(path, mts: MTS, mc: bool = False):
         )
         uid += 1
 
+    red_transitions = 0
+
+    def derive_group(transition):
+        nonlocal red_transitions
+        if transition['green']:
+            return 0
+        elif transition['red']:
+            red_transitions += 1
+            return red_transitions
+        else:
+            return -1
+
     transitions = []
     for transition in mts.transitions:
         transitions.append(
             gen_mts_transition(state_mapping, transition) if not mc else
-            gen_mc_transition(state_mapping, transition)
+            gen_mc_transition(state_mapping, transition, **{'group': derive_group(transition)} if derive_groups else {})
         )
 
     with open(path, 'wt') as f:
@@ -53,15 +65,22 @@ def gen_mts_transition(state_mapping, transition):
     )
 
 
-def gen_mc_transition(state_mapping, transition):
-    return 's{src} -> s{dest} [modality="{mod}", style="{style}", {color} contract="{contract}", label="{label}"];'.format(
-        src=state_mapping[transition["src"]],
-        dest=state_mapping[transition["dest"]],
-        mod="MUST" if transition["must"] else "MAY",
-        style="strict" if transition["must"] else "dashed",
-        label=transition["label"],
-        color='color="green"' if transition["green"] else
+def gen_mc_transition(state_mapping, transition, **kwargs):
+    options = {
+        'src': state_mapping[transition["src"]],
+        'dest': state_mapping[transition["dest"]],
+        'mod': "MUST" if transition["must"] else "MAY",
+        'style': "strict" if transition["must"] else "dashed",
+        'label': transition["label"],
+        'color': 'color="green"' if transition["green"] else
         ('color="red"' if transition["red"] else ''),
-        contract='GREEN' if transition["green"] else
-        ('RED' if transition["red"] else 'NONE')
+        'contract': 'GREEN' if transition["green"] else
+        ('RED' if transition["red"] else 'NONE'),
+        'group': transition["group"] if "group" in transition else "-1"
+    }
+
+    options.update(kwargs)
+
+    return 's{src} -> s{dest} [modality="{mod}", style="{style}", {color} contract="{contract}", group="{group}", label="{label}"];'.format(
+        **options
     )

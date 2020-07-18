@@ -26,7 +26,8 @@ def convert(args):
     default_options = {
         'input': '',
         'output': '',
-        'mc': False
+        'mc': False,
+        'auto_group': False
     }
     default_options.update(vars(args))
 
@@ -56,7 +57,7 @@ def convert(args):
 
     if opath.suffix == '.dot':
         log.info(f'Writing to {opath} ...')
-        modal_to_dot(path=opath, mts=mts_repr, mc=default_options['mc'])
+        modal_to_dot(path=opath, mts=mts_repr, mc=default_options['mc'], derive_groups=default_options['auto_group'])
     elif opath.suffix == '.xml':
         pass
 
@@ -107,9 +108,10 @@ aparser.set_defaults(func=noattr)
 subparsers = aparser.add_subparsers()
 
 converter = subparsers.add_parser('convert', aliases=['cv'], help='Convert between dot and xml syntax')
-converter.add_argument('-i', '--input', required=True, type=str, help='Input path (format is automatically deduced)')
+converter.add_argument('-i', '--input', required=True, type=str, help='Input path (format and dialect are automatically deduced)')
 converter.add_argument('-o', '--output', required=True, type=str, help='Output path (format is automatically deduced)')
-converter.add_argument('--mc', required=False, action='store_true', help='Input is interpreted as modal contract (default is mts)')
+converter.add_argument('--mc', required=False, action='store_true', help='Switch output format to mc-dialect (default is mts)')
+converter.add_argument('--auto-group', required=False, action='store_true', help='Derive group numbers automatically (overwriting existing)')
 converter.set_defaults(func=convert)
 
 tests = subparsers.add_parser('test', help='Generate test cases out of existing (de)compositions.')
