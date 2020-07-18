@@ -10,7 +10,8 @@ from pprint import pprint
 
 import yaml
 
-from dot2xml import modal_to_dot
+from export_dot import modal_to_dot
+from export_xml import modal_to_xml
 from parse_dot import parse_dot
 from parse_xml import parse_xml
 from test_case import read_directory
@@ -59,7 +60,8 @@ def convert(args):
         log.info(f'Writing to {opath} ...')
         modal_to_dot(path=opath, mts=mts_repr, mc=default_options['mc'], derive_groups=default_options['auto_group'])
     elif opath.suffix == '.xml':
-        pass
+        log.info(f'Writing to {opath} ...')
+        modal_to_xml(path=opath, mts=mts_repr, mc=default_options['mc'], derive_groups=default_options['auto_group'])
 
 
 def create_tests_from_dag(args):

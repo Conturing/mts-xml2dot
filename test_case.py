@@ -10,7 +10,7 @@ import networkx.algorithms.isomorphism as iso
 import matplotlib.pyplot as plt
 import pygraphviz as pgv
 
-from dot2xml import modal_to_dot
+from export_dot import modal_to_dot
 from parse_dot import parse_dot
 import logging
 
