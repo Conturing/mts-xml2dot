@@ -6,6 +6,9 @@ class MTS:
     def __init__(self):
         self.states = []
         self.transitions = []
+        self.ztx_color = False
+        self.ztx_modality = False
+        self.ztx_membership = False
 
     def add_state(self, id, initial: bool):
         self._add_state(**{
@@ -39,7 +42,20 @@ class MTS:
             'may': True,
             'must': False,
             'green': False,
-            'red': False
+            'red': False,
+            'memberId': -1
         }
+
+        if 'src' not in transition or 'label' not in transition or 'dest' not in transition:
+            raise ValueError(f'key argument for new transition missing: '
+                             f'{transition.get("src")} -{transition.get("label")}-> {transition.get("dest")}')
+
+        if 'may' in transition or 'must' in transition:
+            self.ztx_modality = True
+        if 'green' in transition or 'red' in transition:
+            self.ztx_color = True
+        if 'memberId' in transition:
+            self.ztx_membership = True
+
         options.update(transition)
         self.transitions.append(options)

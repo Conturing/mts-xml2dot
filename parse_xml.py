@@ -1,10 +1,12 @@
 from distutils.util import strtobool
+from typing import Mapping
 from xml.etree import ElementTree as ET
 import logging
 
 from mts import MTS
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 def parse_xml(path) -> MTS:
@@ -33,11 +35,33 @@ def parse_xml(path) -> MTS:
         src   = transition.find('sourceId').text
         dest  = transition.find('targetId').text
         label = transition.find('label').text
-        attr  = transition.find('attributes')
-        may   = bool(strtobool(attr.find('isMay').text))
-        must  = bool(strtobool(attr.find('isMust').text))
-        green = bool(strtobool(attr.find('isGreen').text))
-        red   = bool(strtobool(attr.find('isRed').text))
-        mts.add_transition(src, dest, label, may, must, green, red)
+        try:
+            attr = transition.find('attributes')
+            trans_attr = {}
+            for child in attr:
+                if child.text is not None:
+                    trans_attr[child.tag] = child.text
+            trans_attr = convert_xml_attr(trans_attr)
+            log.info(trans_attr)
+            mts._add_transition(src=src, dest=dest, label=label, **trans_attr)
+        except (AttributeError, ValueError) as e:
+            log.warning(f'Expected attribute tag in xml: on transition {src} -{label}-> {dest}: {e}')
+            mts._add_transition(src=src, dest=dest, label=label)
 
     return mts
+
+
+def convert_xml_attr(keys: Mapping):
+    res = {}
+    map_keys = {
+        'isMay': ('may', lambda x: bool(strtobool(x))),
+        'isMust': ('must', lambda x: bool(strtobool(x))),
+        'isGreen': ('green', lambda x: bool(strtobool(x))),
+        'isRed': ('red', lambda x: bool(strtobool(x))),
+        'memberId': ('memberId', lambda x: int(x))
+    }
+    for xml_key, (norm_key, func) in map_keys.items():
+        if xml_key in keys:
+            res[norm_key] = func(keys[xml_key])
+
+    return res
